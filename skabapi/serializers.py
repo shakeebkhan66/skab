@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from skabapi.models import UserModel
+from skabapi.models import UserModel, RecipeModel
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -37,3 +37,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'error': 'Both passwords dont match'
             })
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecipeModel
+        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image']
