@@ -1,12 +1,12 @@
 from django.db import models
 
-STATE_CHOICE = ((
-    ('All', 'All'),
+CATEGORY_CHOICE = ((
     ('Tea', 'Tea'),
-    ('Biryani', 'Biryani'),
+    ('Rice', 'Rice'),
+    ('Pizza', 'Pizza'),
     ('Karhai', 'Karhai'),
-    ('Cakes', 'Cakes'),
-    ('Vegetables', 'Vegetables'),
+    ('Cake', 'Cake'),
+    ('Vegetable', 'Vegetable'),
     ('Salad', 'Salad'),
 ))
 
@@ -19,10 +19,17 @@ class UserModel(models.Model):
     password = models.CharField(max_length=100)
     confirmPassword = models.CharField(max_length=100)
 
+    def __str__(self):
+        return self.username
+
 
 class RecipeModel(models.Model):
     productName = models.CharField(max_length=100)
     ingredients = models.CharField(max_length=300)
     makeRecipe = models.CharField(max_length=300)
-    categories = models.CharField(max_length=150)
+    categories = models.CharField(max_length=150, choices=CATEGORY_CHOICE, )
     image = models.ImageField(upload_to="my_picture", blank=True)
+    username = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False, default=False)
+
+    def __str__(self):
+        return f'{self.username}'

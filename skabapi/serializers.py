@@ -42,4 +42,4 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeModel
-        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image']
+        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image', 'user']

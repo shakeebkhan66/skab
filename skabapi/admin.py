@@ -11,4 +11,4 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(RecipeModel)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image']
+    list_display = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image', 'username']
