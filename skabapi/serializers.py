@@ -40,6 +40,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+
+    # user = serializers.StringRelatedField(many=True, read_only=True)
+    username = serializers.CharField(source="username.username", read_only=True)
+
     class Meta:
         model = RecipeModel
-        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image', 'user']
+        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image', 'username']
