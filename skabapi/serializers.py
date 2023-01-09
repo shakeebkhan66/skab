@@ -5,7 +5,6 @@ from skabapi.models import UserModel, RecipeModel
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = UserModel
         fields = [
@@ -40,10 +39,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-
     # user = serializers.StringRelatedField(many=True, read_only=True)
-    username = serializers.CharField(source="username.username", read_only=True)
+    # username = serializers.CharField(source="username.username")
+
+    def create(self, validated_data):
+        return RecipeModel.objects.create(**validated_data)
 
     class Meta:
         model = RecipeModel
         fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image', 'username']
+        depth = 1
+
+

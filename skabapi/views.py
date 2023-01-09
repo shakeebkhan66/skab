@@ -27,7 +27,7 @@ class RegisterAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MyRecipes(APIView):
+class Recipes(APIView):
     def get(self, request, format=None):
         try:
             recipes = RecipeModel.objects.all()
@@ -36,7 +36,10 @@ class MyRecipes(APIView):
         except Exception as e:
             return Response({"Error": serializer.errors, "Exception": e}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class CreateRecipes(APIView):
     def post(self, request, format=None):
+        # user = UserModel.objects.get(username=request.data)
         serializer = RecipeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

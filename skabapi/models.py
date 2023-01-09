@@ -28,8 +28,9 @@ class RecipeModel(models.Model):
     ingredients = models.CharField(max_length=300)
     makeRecipe = models.CharField(max_length=300)
     categories = models.CharField(max_length=150, choices=CATEGORY_CHOICE, )
-    image = models.ImageField(upload_to="my_picture", blank=True)
-    username = models.ForeignKey(UserModel, on_delete=models.CASCADE, default=False)
+    image = models.ImageField(upload_to="my_picture", blank=False)
+    username = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="user")
 
     def __str__(self):
         return f'{self.username}'
+
