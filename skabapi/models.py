@@ -22,6 +22,9 @@ class UserModel(models.Model):
     def __str__(self):
         return self.username
 
+    def set_password(self, password):
+        pass
+
 
 class RecipeModel(models.Model):
     productName = models.CharField(max_length=100)
