@@ -1,5 +1,5 @@
 from django.urls import path
-from skabapi.views import RegisterAPIView, Recipes, CreateRecipes, LoginView
+from skabapi.views import RegisterAPIView, Recipes, CreateRecipes, LoginAPIView, LoginView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,

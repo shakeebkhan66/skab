@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from skabapi.models import UserModel, RecipeModel
+from skabapi.models import User, RecipeModel
 
-admin.site.register(UserModel)
+admin.site.register(User)
 admin.site.register(RecipeModel)
 # Register your models here.
 # @admin.register(UserModel)
