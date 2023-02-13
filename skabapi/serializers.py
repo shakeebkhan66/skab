@@ -1,7 +1,11 @@
+from xml.dom import ValidationErr
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from skabapi.models import User, RecipeModel
+from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 
 # class UserRegisterSerializer(serializers.ModelSerializer):
@@ -94,6 +98,13 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             'confirmPassword',
         )
 
+    def validate(self, attrs):
+        password = attrs.get("password")
+        confirmPassword = attrs.get("confirmPassword")
+        if password != confirmPassword:
+            raise serializers.ValidationError("Password and ConfirmPassword doesn't match")
+        return attrs
+
     def create(self, validated_data):
         password = make_password(validated_data.get('password'))
         validated_data.update({'password': password})
@@ -108,16 +119,85 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields = ['email', 'password']
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'username',
             'email',
             'fullname',
-            'password',
-            'confirmPassword',
+            # 'password',
+            # 'confirmPassword',
         )
+
+
+class UserChangePasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
+    confirmPassword = serializers.CharField(max_length=255, style={'input_type': 'confirmPassword'}, write_only=True)
+
+    class Meta:
+        fields = ['password', 'confirmPassword']
+
+    def validate(self, attrs):
+        password = attrs.get("password")
+        confirmPassword = attrs.get("confirmPassword")
+        user = self.context.get('user')
+        if password != confirmPassword:
+            raise serializers.ValidationError("Password and confirm password doesn't match")
+        user.set_password(password)
+        user.save()
+        return attrs
+
+
+class SendPasswordResetEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255)
+
+    class Meta:
+        fields = ['email']
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.id))
+            print("Encoded ID", uid)
+            token = PasswordResetTokenGenerator().make_token(user)
+            print("Password", token)
+            link = "http:localhost:3000/api/user/reset/"+uid+'/'+token
+            print("Password Reset Link", link)
+            # SEND EMAIL
+            return attrs
+        else:
+            raise ValidationErr("You are not a registered user")
+
+
+class ResetPasswordSubmitSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
+    confirmPassword = serializers.CharField(max_length=255, style={'input_type': 'confirmPassword'}, write_only=True)
+
+    class Meta:
+        fields = ['password', 'confirmPassword']
+
+    def validate(self, attrs):
+        try:
+            password = attrs.get("password")
+            confirmPassword = attrs.get("confirmPassword")
+            uid = self.context.get("uid")
+            token = self.context.get("token")
+            if password != confirmPassword:
+                raise serializers.ValidationError("Password and confirm password doesn't match")
+            id = smart_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(id=id)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                raise ValidationErr("Token is not valid and expired")
+            user.set_password(password)
+            user.save()
+            return attrs
+        except DjangoUnicodeDecodeError as identifier:
+            PasswordResetTokenGenerator().check_token(user, token)
+            raise ValidationErr("Token is not valid and expired")
+
 
 
 class RecipeSerializer(serializers.ModelSerializer):
