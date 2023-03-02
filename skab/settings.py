@@ -9,9 +9,10 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
-
+import datetime
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,7 +25,7 @@ SECRET_KEY = 'django-insecure-$y9i3%!7awa%*o3i6o)*68f%hyoi%bg#-nmc(-^+q+%v6l77ny
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0", "192.168.1.38"]
+ALLOWED_HOSTS = ["0.0.0.0", "192.168.42.43", "192.168.42.145", "192.168.100.174", "127.0.0.1", "192.168.1.7"]
 
 
 # Application definition
@@ -122,7 +123,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR / "media")
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -130,8 +131,14 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.FormParser',
+        # 'rest_framework.parsers.FormParser',
+        # 'rest_framework.parsers.MultiParser',
     )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=4),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
 }
 
 AUTH_USER_MODEL = 'skabapi.User'

@@ -2,6 +2,9 @@ from xml.dom import ValidationErr
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from skabapi.models import User, RecipeModel
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -164,7 +167,7 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
             print("Encoded ID", uid)
             token = PasswordResetTokenGenerator().make_token(user)
             print("Password", token)
-            link = "http:localhost:3000/api/user/reset/"+uid+'/'+token
+            link = "http:localhost:3000/api/user/reset/" + uid + '/' + token
             print("Password Reset Link", link)
             # SEND EMAIL
             return attrs
@@ -198,6 +201,23 @@ class ResetPasswordSubmitSerializer(serializers.Serializer):
             PasswordResetTokenGenerator().check_token(user, token)
             raise ValidationErr("Token is not valid and expired")
 
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    default_error_messages = {
+        "bad_token": ("Token is expired or invalid")
+    }
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail('bad_token')
 
 
 class RecipeSerializer(serializers.ModelSerializer):

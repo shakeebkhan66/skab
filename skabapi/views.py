@@ -1,4 +1,7 @@
+from django.contrib import auth
 from django.contrib.auth.hashers import check_password
+from django.http.multipartparser import MultiPartParser
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
@@ -6,11 +9,12 @@ from rest_framework_simplejwt.tokens import Token
 from skabapi.models import User, RecipeModel
 from skabapi.renderers import UserRenderer
 from skabapi.serializers import UserRegisterSerializer, RecipeSerializer, UserLoginSerializer, \
-    UserProfileSerializer, UserChangePasswordSerializer, SendPasswordResetEmailSerializer, ResetPasswordSubmitSerializer
+    UserProfileSerializer, UserChangePasswordSerializer, SendPasswordResetEmailSerializer, \
+    ResetPasswordSubmitSerializer, LogoutSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, exceptions
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, logout
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -54,6 +58,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 #         return Response({"payload": serializer.data, 'status': status.HTTP_200_OK})
 
 # Generate Token Manually
+
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
 
@@ -61,20 +66,6 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
-
-
-class RegisterAPIView(APIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = [UserRenderer]
-
-    def post(self, request):
-        serializer = UserRegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            token = get_tokens_for_user(user)
-            data = {'detail': user.username + ' registered successfully!'}
-            return Response({'data': data, 'status': HTTP_201_CREATED, 'token': token})
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 def validate_user(attrs):
@@ -98,20 +89,34 @@ def generate_token(user):
     return Token.objects.create(user=user)
 
 
-class LoginAPIView(APIView):
+class RegisterAPIView(APIView):
     permission_classes = (AllowAny,)
+    renderer_classes = [UserRenderer]
 
     def post(self, request):
-        user = validate_user(request.data)
-        serializer = UserProfileSerializer(user)
-        data = serializer.data
+        serializer = UserRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            token = get_tokens_for_user(user)
+            data = {'detail': user.username + ' registered successfully!'}
+            return Response({'data': data, 'status': HTTP_201_CREATED, 'token': token})
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-        try:
-            token = generate_token(user)
-            data.update({'token': token.key})
-            return Response(data, status=HTTP_200_OK)
-        except Exception as e:
-            return Response(e, status=HTTP_400_BAD_REQUEST)
+
+# class LoginAPIView(APIView):
+#     permission_classes = (AllowAny,)
+#
+#     def post(self, request):
+#         user = validate_user(request.data)
+#         serializer = UserProfileSerializer(user)
+#         data = serializer.data
+#
+#         try:
+#             token = generate_token(user)
+#             data.update({'token': token.key})
+#             return Response(data, status=HTTP_200_OK)
+#         except Exception as e:
+#             return Response(e, status=HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):
@@ -180,6 +185,32 @@ class ResetPasswordSubmitView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# class LogoutView(APIView):
+#     permission_classes = (IsAuthenticated,)
+#
+#     def post(self, request):
+#         try:
+#             refresh_token = request.data["refresh_token"]
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+#             return Response(status=status.HTTP_205_RESET_CONTENT)
+#         except Exception as e:
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class Recipes(APIView):
     def get(self, request, format=None):
@@ -195,9 +226,10 @@ class CreateRecipes(APIView):
     def post(self, request, format=None):
         # user = UserModel.objects.get(username=request.data)
         recipe = request.data
+        print("Hello" + str(recipe))
         if recipe is not None:
             new_recipe = RecipeModel.objects.create(
-                username=User.objects.get(id=recipe["username"]),
+                username=User.objects.get(username=recipe["username"]),
                 productName=recipe["productName"],
                 ingredients=recipe["ingredients"],
                 makeRecipe=recipe["makeRecipe"],
@@ -208,9 +240,8 @@ class CreateRecipes(APIView):
             serializer = RecipeSerializer(new_recipe)
             return Response(serializer.data)
         else:
+            print("Error")
             return Response({"msg": "Please enter the data"})
-
-
 
         # if serializer.is_valid():
         #     serializer.save()

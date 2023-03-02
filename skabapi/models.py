@@ -11,6 +11,7 @@ CATEGORY_CHOICE = ((
     ('Cake', 'Cake'),
     ('Vegetable', 'Vegetable'),
     ('Salad', 'Salad'),
+    ('Roti', 'Roti'),
 ))
 
 
