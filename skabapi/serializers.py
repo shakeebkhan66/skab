@@ -231,3 +231,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = RecipeModel
         fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image', 'username']
         depth = 1
+
+
+class ProfileRecipeSerializer(serializers.ModelSerializer):
+    # user = serializers.StringRelatedField(many=True, read_only=True)
+    # username = serializers.CharField(source="username.username")
+
+    def create(self, validated_data):
+        return RecipeModel.objects.create(**validated_data)
+
+    class Meta:
+        model = RecipeModel
+        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image']

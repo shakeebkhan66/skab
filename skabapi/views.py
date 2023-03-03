@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import Token
 from skabapi.models import User, RecipeModel
 from skabapi.renderers import UserRenderer
-from skabapi.serializers import UserRegisterSerializer, RecipeSerializer, UserLoginSerializer, \
+from skabapi.serializers import UserRegisterSerializer, ProfileRecipeSerializer, UserLoginSerializer, \
     UserProfileSerializer, UserChangePasswordSerializer, SendPasswordResetEmailSerializer, \
     ResetPasswordSubmitSerializer, LogoutSerializer
 from rest_framework.response import Response
@@ -141,13 +141,35 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# class UserProfileView(APIView):
+#     renderer_classes = [UserRenderer]
+#     permission_classes = [IsAuthenticated]
+#
+#     def get(self, request, format=None):
+#         serializer = UserProfileSerializer(request.user)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request):
+        user = request.user
+        user_serializer = UserProfileSerializer(user)
+        recipes = RecipeModel.objects.filter(username=user)
+        recipe_serializer = ProfileRecipeSerializer(recipes, many=True)
+        data = {
+            'user': user_serializer.data,
+            'recipes': recipe_serializer.data
+        }
+        return Response(data)
+
+
+
+
+
+
 
 
 class UserChangePasswordView(APIView):
@@ -216,7 +238,7 @@ class Recipes(APIView):
     def get(self, request, format=None):
         try:
             recipes = RecipeModel.objects.all()
-            serializer = RecipeSerializer(recipes, many=True)
+            serializer = ProfileRecipeSerializer(recipes, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"Error": serializer.errors, "Exception": e}, status=status.HTTP_400_BAD_REQUEST)
@@ -237,7 +259,7 @@ class CreateRecipes(APIView):
                 image=recipe["image"]
             )
             new_recipe.save()
-            serializer = RecipeSerializer(new_recipe)
+            serializer = ProfileRecipeSerializer(new_recipe)
             return Response(serializer.data)
         else:
             print("Error")
