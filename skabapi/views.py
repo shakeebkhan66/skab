@@ -10,7 +10,7 @@ from skabapi.models import User, RecipeModel
 from skabapi.renderers import UserRenderer
 from skabapi.serializers import UserRegisterSerializer, ProfileRecipeSerializer, UserLoginSerializer, \
     UserProfileSerializer, UserChangePasswordSerializer, SendPasswordResetEmailSerializer, \
-    ResetPasswordSubmitSerializer, LogoutSerializer
+    ResetPasswordSubmitSerializer, LogoutSerializer, RecipeSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, exceptions
 from rest_framework.authtoken.models import Token
@@ -163,13 +163,8 @@ class UserProfileView(APIView):
             'user': user_serializer.data,
             'recipes': recipe_serializer.data
         }
-        return Response(data)
-
-
-
-
-
-
+        data1 = [data]
+        return Response(data1)
 
 
 class UserChangePasswordView(APIView):
@@ -238,7 +233,7 @@ class Recipes(APIView):
     def get(self, request, format=None):
         try:
             recipes = RecipeModel.objects.all()
-            serializer = ProfileRecipeSerializer(recipes, many=True)
+            serializer = RecipeSerializer(recipes, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"Error": serializer.errors, "Exception": e}, status=status.HTTP_400_BAD_REQUEST)
