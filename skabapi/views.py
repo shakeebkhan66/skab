@@ -1,7 +1,4 @@
-from django.contrib import auth
 from django.contrib.auth.hashers import check_password
-from django.http.multipartparser import MultiPartParser
-from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
@@ -16,7 +13,7 @@ from rest_framework import status, permissions, exceptions
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, logout
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework.parsers import MultiPartParser, FormParser
 
 # Create your views here.
 # class RegisterAPIView(APIView):
@@ -92,8 +89,9 @@ def generate_token(user):
 class RegisterAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = [UserRenderer]
+    parser_classes = [MultiPartParser, FormParser]
 
-    def post(self, request):
+    def post(self, request, format=None):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()

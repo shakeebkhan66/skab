@@ -99,6 +99,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             'fullname',
             'password',
             'confirmPassword',
+            'image',
         )
 
     def validate(self, attrs):
@@ -112,6 +113,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         password = make_password(validated_data.get('password'))
         validated_data.update({'password': password})
         return super(UserRegisterSerializer, self).create(validated_data)
+
+
+
 
 
 class UserLoginSerializer(serializers.ModelSerializer):
@@ -130,6 +134,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'fullname',
+            'image',
             # 'password',
             # 'confirmPassword',
         )
@@ -229,7 +234,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeModel
-        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'image', 'username']
+        fields = ['id', 'productName', 'ingredients', 'makeRecipe', 'categories', 'favorite', 'image', 'username']
         depth = 1
 
 
