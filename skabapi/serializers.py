@@ -100,6 +100,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             'password',
             'confirmPassword',
             'image',
+            'bio',
         )
 
     def validate(self, attrs):
@@ -113,9 +114,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         password = make_password(validated_data.get('password'))
         validated_data.update({'password': password})
         return super(UserRegisterSerializer, self).create(validated_data)
-
-
-
 
 
 class UserLoginSerializer(serializers.ModelSerializer):
@@ -135,6 +133,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'email',
             'fullname',
             'image',
+            'bio',
             # 'password',
             # 'confirmPassword',
         )
@@ -211,7 +210,7 @@ class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
     default_error_messages = {
-        "bad_token": ("Token is expired or invalid")
+        "bad_token": "Token is expired or invalid"
     }
 
     def validate(self, attrs):

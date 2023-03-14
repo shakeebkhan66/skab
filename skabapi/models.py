@@ -36,6 +36,7 @@ class User(AbstractBaseUser):
     password = models.CharField(max_length=255, help_text='password')
     confirmPassword = models.CharField(max_length=255, help_text='confirmPassword')
     image = models.ImageField(upload_to="user_profile_images", default=None, blank=False)
+    bio = models.CharField(max_length=500, blank=False)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
