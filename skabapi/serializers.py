@@ -122,6 +122,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'password']
+        depth = 1
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

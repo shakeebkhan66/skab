@@ -15,6 +15,7 @@ from django.contrib.auth import authenticate, logout
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import MultiPartParser, FormParser
 
+
 # Create your views here.
 # class RegisterAPIView(APIView):
 #     serializer_class = UserRegisterSerializer
@@ -122,17 +123,23 @@ class LoginView(APIView):
 
     def post(self, request, format=None):
         print(request.data)
+
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             email = serializer.data.get("email")
             password = serializer.data.get("password")
+            user = User.objects.get(email=serializer.data.get("email"))
             print(email)
             print(password)
             user = authenticate(email=email, password=password)
             print(user)
             if user is not None:
                 token = get_tokens_for_user(user)
-                return Response({"token": token, "msg": "Login Success"}, status=status.HTTP_200_OK)
+                return Response({"token": token, "details": {
+                    "username": user.username,
+                    "bio": user.bio,
+                    "fullName": user.fullname,
+                }, "msg": "Login Success"}, status=status.HTTP_200_OK)
             else:
                 return Response({"errors": {"non_field_errors": ["Email or Password is not valid"]}},
                                 status=status.HTTP_404_NOT_FOUND)
@@ -238,6 +245,10 @@ class Recipes(APIView):
 
 
 class CreateRecipes(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = [UserRenderer]
+    parser_classes = [MultiPartParser, FormParser]
+
     def post(self, request, format=None):
         # user = UserModel.objects.get(username=request.data)
         recipe = request.data
